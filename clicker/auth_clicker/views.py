@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -20,14 +21,25 @@ class UserDetail(generics.RetrieveAPIView):
     serializer_class = UserSerializerDetail
 
 
-def index(request):
-    user = User.objects.filter(id=request.user.id)
-    if len(user) != 0:
-        core = Core.objects.get(user=request.user)
-        return render(request, 'index.html',{'core' : core})
-    else:
-        return redirect('login')
+# def index(request):
+#     user = User.objects.filter(id=request.user.id)
+#     if len(user) != 0:
+#         core = Core.objects.get(user=request.user)
+#         return render(request, 'index.html',{'core' : core})
+#     else:
+#         return redirect('login')
 
+
+def index(request):
+    coreModel = apps.get_model('backend', 'Core')
+    boostsModel = apps.get_model('backend', 'Boost')
+    core = coreModel.objects.get(user=request.user)
+    boosts = boostsModel.objects.filter(core=core)
+
+    return render(request, 'index.html',{
+        'core' : core,
+        'boosts' : boosts,
+    })
 
 def user_logout(request):
     logout(request)
